@@ -1,4 +1,6 @@
 test.dSYM/
+mopso.dSYM/
 test
+mopso
 test.cpp
 .vscode/

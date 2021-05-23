@@ -67,7 +67,6 @@ void organiaza_repositorio();
 void crowdingDistance();
 bool compararDuasSolucoesCD(Individuo a, Individuo b);
 
-
 void calcularDTLZ2(double *x, double *fx);
 void calcularDTLZ3(double *x, double *fx);
 
@@ -82,18 +81,22 @@ int main(const int argc, const char *argv[])
         memcpy(&populacao[i].melhorPessoal, &populacao[i].solucao, sizeof(Individuo)); //inicializa o melhor pessoal
     }
     atualizarArquivo();
+    cout << "[ - ] PRIMEIRA CHAMADA DO ATUALIZAR ARQUIVO" << endl;
 
     for (long g = 0; g < geracoes; g++)
     { //laco principal
-        // for (int i = 0; i < tam_pop; i++)
-        // { //laco para atualizacao dos individuos
-        //     selecionarLider(&populacao[i]);
-        //     calcularVelocidade(&populacao[i]);
-        //     atualizarPosicao(&populacao[i]);
-        //     mutacao(&populacao[i].solucao);
-        //     aptidao(&populacao[i].solucao);
-        //     atualizarMelhorPessoal(&populacao[i]);
-        // }
+        cout << "[ - ] LACO DAS GERACOES | G: " << g << endl;
+        for (int i = 0; i < tam_pop; i++)
+        { //laco para atualizacao dos individuos
+            cout << "[ - ] SELECIONA LIDER " << endl;
+            selecionarLider(&populacao[i]);
+            //     calcularVelocidade(&populacao[i]);
+            //     atualizarPosicao(&populacao[i]);
+            //     mutacao(&populacao[i].solucao);
+            //     aptidao(&populacao[i].solucao);
+            //     atualizarMelhorPessoal(&populacao[i]);
+        }
+        cout << "[ - ] SEGUNDA CHAMADA DO ATUALIZAR ARQUIVO " << endl;
         atualizarArquivo();
     }
     for (int i = 0; i < tam_rep + 1; i++)
@@ -112,7 +115,6 @@ int main(const int argc, const char *argv[])
     }
 }
 
-
 void inicializacao()
 {
     double extensao = limiteSuperior - limiteInferior; // qual o tamanho total
@@ -126,7 +128,6 @@ void inicializacao()
     }
 }
 
-
 void aptidao(Individuo *ind)
 {
     for (int i = 0; i < tam_pop; i++)
@@ -136,74 +137,79 @@ void aptidao(Individuo *ind)
     }
 }
 
-
 void atualizarArquivo()
 {
     //se o repositorio esta vazio, adiciona qualquer solucao
     if (verifica_repositorio() == true)
     {
-        populacao[1].solucao.valida=true;
+        populacao[1].solucao.valida = true;
         repositorio[indice_disponivel()] = populacao[1].solucao;
+        tamanhoAtualRepositorio++;
+        cout << "[ " << tamanhoAtualRepositorio << " ]" << endl;
     }
-    else
+
+    //laco mais interno | corre toda populacao
+    for (int ind_pop = 0; ind_pop < tam_pop; ind_pop++)
     {
-        //laco mais interno | corre toda populacao
-        for (int ind_pop = 0; ind_pop < tam_pop; ind_pop++)
+        //controle de insercao de novas solucoes
+        bool _alfa = false;
+        //laco externo | corre o repositorio
+        for (int ind_rep = 0; ind_rep < tam_rep; ind_rep++)
         {
-            //controle de insercao de novas solucoes
-            bool _alfa = false;
-            //laco externo | corre o repositorio
-            for (int ind_rep = 0; ind_rep < tam_rep; ind_rep++)
+            // se IndPOP for dominada por IndREP
+            if (dominados(populacao[ind_pop].solucao, repositorio[ind_rep]) == true)
             {
-                // se IndPOP for dominada por IndREP
-                if (dominados(populacao[ind_pop].solucao, repositorio[ind_rep]) == true)
+                cout << "IND [B] DOMINA [A] (BREAK;)" << endl;
+                cout << "[ " << tamanhoAtualRepositorio << " ]" << endl;
+                // se IndPOP nao for dominada por IndREP
+                break;
+            }
+            else
+            {
+                // se a solucão ainda não tiver sido inserida no repositorio
+                if (_alfa != true)
                 {
-                    // cout << "IND [B] DOMINA [A] (BREAK;)" << endl;
-                    // se IndPOP nao for dominada por IndREP
-                    break;
-                }
-                else
-                {
-                    // se a solucão ainda não tiver sido inserida no repositorio
-                    if (_alfa != true)
+                    populacao[ind_pop].solucao.valida = true;
+                    repositorio[indice_disponivel()] = populacao[ind_pop].solucao;
+                    tamanhoAtualRepositorio++;
+                    //ganrante que ela não será inserida novamente
+                    _alfa = true;
+                    // se IndPOP não for uma "nao-dominada" logo ela domina IntREP
+                    if (nao_dominados(populacao[ind_pop].solucao, repositorio[ind_rep]) == false)
                     {
-                        populacao[ind_pop].solucao.valida=true;
-                        repositorio[indice_disponivel()] = populacao[ind_pop].solucao;
-                        tamanhoAtualRepositorio++;
-                        //ganrante que ela não será inserida novamente
-                        _alfa = true;
-                        // se IndPOP não for uma "nao-dominada" logo ela domina IntREP
-                        if (nao_dominados(populacao[ind_pop].solucao, repositorio[ind_rep]) == false)
-                        {
-                            // cout << "IND [A] DOMINA [B]" << endl;
-                            //retira do repositorio | na verdade desconsidera ela mesmo mantendo-a no reponsitório
-                            repositorio[ind_rep].valida = false;
-                            tamanhoAtualRepositorio --;
-                        }
-                        // cout << "IND [A] E NAO DOMINADA" << endl;
-                        // so o repositorio estrapolou a capacidade
-                        if (tamanhoAtualRepositorio >= tam_rep + 1)
-                        {
-                            organiaza_repositorio();
-                            crowdingDistance();
-                        }
+                        cout << "IND [A] DOMINA [B]" << endl;
+                        cout << "[ " << tamanhoAtualRepositorio << " ]" << endl;
+                        //retira do repositorio | na verdade desconsidera ela mesmo mantendo-a no reponsitório
+                        repositorio[ind_rep].valida = false;
+                        tamanhoAtualRepositorio--;
+                    }
+                    cout << "IND [A] E NAO DOMINADA" << endl;
+                    cout << "[ " << tamanhoAtualRepositorio << " ]" << endl;
+                    // so o repositorio estrapolou a capacidade
+                    if (tamanhoAtualRepositorio >= tam_rep + 1)
+                    {
+                        organiaza_repositorio();
+                        crowdingDistance();
                     }
                 }
             }
         }
-        //caso contrario
-        //verifica se a nova solucao e dominada por alguma do repositorio ou igual a alguma do repositorio
-        //se nao for
-        //verifica se a nova solucao domina alguma que ja esta no repositorio, se dominar, remove
-        //adiciona a nova solucao ao repositorio
-        //se o tamanho do repositorio estiver maior que o tamanho maximo permitido (e possivel extrapolar temporariamente o tamanho em uma solucao) remove uma solucao
-
-        //ao final, calcula a crowding distance das solucoes presentes no repositorio
     }
+    //caso contrario
+    //verifica se a nova solucao e dominada por alguma do repositorio ou igual a alguma do repositorio
+    //se nao for
+    //verifica se a nova solucao domina alguma que ja esta no repositorio, se dominar, remove
+    //adiciona a nova solucao ao repositorio
+    //se o tamanho do repositorio estiver maior que o tamanho maximo permitido (e possivel extrapolar temporariamente o tamanho em uma solucao) remove uma solucao
+
+    //ao final, calcula a crowding distance das solucoes presentes no repositorio
+    crowdingDistance();
+    cout << "[ " << tamanhoAtualRepositorio << " ]" << endl;
 }
 
-
-//verifica o indice disponivel no repositorio
+/*
+    consulta o primeiro indice disponivel do repositorio
+*/
 int indice_disponivel()
 {
     int indice = 0;
@@ -218,8 +224,9 @@ int indice_disponivel()
     return indice;
 }
 
-
-//verifica se o repositorio esta vazio
+/*
+    percorre o repositorio e verifica se esta vazio.
+*/
 bool verifica_repositorio()
 {
     int contador = 0;
@@ -237,7 +244,6 @@ bool verifica_repositorio()
         return false;
     }
 }
-
 
 /*
     verifica se o individuo da populacao (INDPOP) e' dominado pelo individuo do repositório (INDREP)
@@ -265,7 +271,6 @@ bool dominados(Individuo IndPop, Individuo IndRep)
         return false;
     }
 }
-
 
 /*
     verifica se um individuo e' ou nao "nao-dominavel"
@@ -295,7 +300,6 @@ bool nao_dominados(Individuo IndPop, Individuo IndRep)
     }
 }
 
-
 /*
     funcao para agrupar os individuos pela validade. 
     Os primeiros individuos serao agrupados pelo valor "true"
@@ -316,7 +320,6 @@ void organiaza_repositorio()
     }
 }
 
-
 /*
     funcao para cacular a crowding distance dos individuos. 
     E' chamada quando o limite do repostório e' extrapolado
@@ -336,11 +339,11 @@ void crowdingDistance()
         }
     }
     int index = 0;
-    double cd=DBL_MAX;
+    double cd = DBL_MAX;
     // cout << indiceInicioRepositorio << endl;
     // cout << indiceFimRepositorio << endl;
 
-    //Percorre todos os objetivos 
+    //Percorre todos os objetivos
     for (int obj = 0; obj < dimensoes_obj; obj++)
     {
         //Possibilidade de valores entre o maior e o menor valor para o objetivo atual
@@ -366,29 +369,75 @@ void crowdingDistance()
             // CD = CD + (IND_POSTERIOR - IND_ANTERIOR)/range
             repositorio[ind].cd = repositorio[ind].cd + (repositorio[ind + 1].fx[obj] - repositorio[ind - 1].fx[obj]) / range;
             // armazena a menor crowding distance e indice do individuo que a possue
-            if (repositorio[ind].cd<cd)
+            if (repositorio[ind].cd < cd)
             {
                 cd = repositorio[ind].cd;
                 index = ind;
             }
         }
-        repositorio[index].valida=false;
         //Atualiza a vaiável global
         objAtual = obj;
     }
+    if(tamanhoAtualRepositorio>tam_rep)
+    {
+        repositorio[index].valida=false;
+        tamanhoAtualRepositorio --;
+    }
 }
 
-
+/*
+    compara os valores objetivos de dois individuos
+*/
 bool compararDuasSolucoesCD(Individuo a, Individuo b)
 {
     return a.fx[objAtual] < b.fx[objAtual];
 }
 
-
+/*
+    torneio binario entre solucoes do repositorio
+    pega duas solucoes aleatorias do repositorio, a que tiver a maior crowding distance vence
+*/
 void selecionarLider(Particula *part)
 {
-    //torneio binario entre solucoes do repositorio
-    //pega duas solucoes aleatorias do repositorio, a que tiver a maior crowding distance vence
+    int contador = 0;
+    int index;
+    for (int a = 0; a < tam_rep + 1; a++)
+    {
+        if (repositorio[a].valida == true)
+        {
+            contador++;
+            index = a;
+        }
+    }
+    if (contador == 1)
+    {
+        part->solucao = repositorio[index];
+    }
+    else
+    {
+        int tamanho_torneio = 7;
+        int indice_solucao_1 = rand() % tamanhoAtualRepositorio;
+        int indice_solucao_2;
+        do
+        {
+            indice_solucao_2 = rand() % tamanhoAtualRepositorio;
+        } while (indice_solucao_1 == indice_solucao_2);
+
+        Individuo solucao_1 = repositorio[indice_solucao_1];
+        Individuo solucao_2 = repositorio[indice_solucao_2];
+
+        for (int i = 0; i < tamanho_torneio; i++)
+        {
+            if (solucao_1.cd > solucao_2.cd)
+            {
+                part->solucao = solucao_1;
+            }
+            else
+            {
+                part->solucao = solucao_2;
+            }
+        }
+    }
 }
 
 void calcularVelocidade(Particula *part)
@@ -418,7 +467,6 @@ void atualizarPosicao(Particula *part)
             part->solucao.x[j] = limiteInferior;
     }
 }
-
 
 void mutacao(Individuo *ind)
 {
