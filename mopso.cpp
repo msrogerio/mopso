@@ -81,22 +81,22 @@ int main(const int argc, const char *argv[])
         memcpy(&populacao[i].melhorPessoal, &populacao[i].solucao, sizeof(Individuo)); //inicializa o melhor pessoal
     }
     atualizarArquivo();
-    cout << "[ - ] PRIMEIRA CHAMADA DO ATUALIZAR ARQUIVO" << endl;
+    // cout << "[ - ] PRIMEIRA CHAMADA DO ATUALIZAR ARQUIVO" << endl;
 
     for (long g = 0; g < geracoes; g++)
     { //laco principal
-        cout << "[ - ] LACO DAS GERACOES | G: " << g << endl;
+        // cout << "[ - ] LACO DAS GERACOES | G: " << g << endl;
         for (int i = 0; i < tam_pop; i++)
         { //laco para atualizacao dos individuos
-            cout << "[ - ] SELECIONA LIDER " << endl;
+            // cout << "[ - ] SELECIONA LIDER " << endl;
             selecionarLider(&populacao[i]);
-            //     calcularVelocidade(&populacao[i]);
-            //     atualizarPosicao(&populacao[i]);
-            //     mutacao(&populacao[i].solucao);
-            //     aptidao(&populacao[i].solucao);
-            //     atualizarMelhorPessoal(&populacao[i]);
+            calcularVelocidade(&populacao[i]);
+            atualizarPosicao(&populacao[i]);
+            mutacao(&populacao[i].solucao);
+            aptidao(&populacao[i].solucao);
+            atualizarMelhorPessoal(&populacao[i]);
         }
-        cout << "[ - ] SEGUNDA CHAMADA DO ATUALIZAR ARQUIVO " << endl;
+        // cout << "[ - ] SEGUNDA CHAMADA DO ATUALIZAR ARQUIVO " << endl;
         atualizarArquivo();
     }
     for (int i = 0; i < tam_rep + 1; i++)
@@ -115,6 +115,7 @@ int main(const int argc, const char *argv[])
     }
 }
 
+
 void inicializacao()
 {
     double extensao = limiteSuperior - limiteInferior; // qual o tamanho total
@@ -128,6 +129,7 @@ void inicializacao()
     }
 }
 
+
 void aptidao(Individuo *ind)
 {
     for (int i = 0; i < tam_pop; i++)
@@ -137,6 +139,7 @@ void aptidao(Individuo *ind)
     }
 }
 
+
 void atualizarArquivo()
 {
     //se o repositorio esta vazio, adiciona qualquer solucao
@@ -145,7 +148,7 @@ void atualizarArquivo()
         populacao[1].solucao.valida = true;
         repositorio[indice_disponivel()] = populacao[1].solucao;
         tamanhoAtualRepositorio++;
-        cout << "[ " << tamanhoAtualRepositorio << " ]" << endl;
+        // cout << "[ " << tamanhoAtualRepositorio << " ]" << endl;
     }
 
     //laco mais interno | corre toda populacao
@@ -159,8 +162,8 @@ void atualizarArquivo()
             // se IndPOP for dominada por IndREP
             if (dominados(populacao[ind_pop].solucao, repositorio[ind_rep]) == true)
             {
-                cout << "IND [B] DOMINA [A] (BREAK;)" << endl;
-                cout << "[ " << tamanhoAtualRepositorio << " ]" << endl;
+                // cout << "IND [B] DOMINA [A] (BREAK;)" << endl;
+                // cout << "[ " << tamanhoAtualRepositorio << " ]" << endl;
                 // se IndPOP nao for dominada por IndREP
                 break;
             }
@@ -177,14 +180,14 @@ void atualizarArquivo()
                     // se IndPOP não for uma "nao-dominada" logo ela domina IntREP
                     if (nao_dominados(populacao[ind_pop].solucao, repositorio[ind_rep]) == false)
                     {
-                        cout << "IND [A] DOMINA [B]" << endl;
-                        cout << "[ " << tamanhoAtualRepositorio << " ]" << endl;
+                        // cout << "IND [A] DOMINA [B]" << endl;
+                        // cout << "[ " << tamanhoAtualRepositorio << " ]" << endl;
                         //retira do repositorio | na verdade desconsidera ela mesmo mantendo-a no reponsitório
                         repositorio[ind_rep].valida = false;
                         tamanhoAtualRepositorio--;
                     }
-                    cout << "IND [A] E NAO DOMINADA" << endl;
-                    cout << "[ " << tamanhoAtualRepositorio << " ]" << endl;
+                    // cout << "IND [A] E NAO DOMINADA" << endl;
+                    // cout << "[ " << tamanhoAtualRepositorio << " ]" << endl;
                     // so o repositorio estrapolou a capacidade
                     if (tamanhoAtualRepositorio >= tam_rep + 1)
                     {
@@ -204,7 +207,7 @@ void atualizarArquivo()
 
     //ao final, calcula a crowding distance das solucoes presentes no repositorio
     crowdingDistance();
-    cout << "[ " << tamanhoAtualRepositorio << " ]" << endl;
+    // cout << "[ " << tamanhoAtualRepositorio << " ]" << endl;
 }
 
 /*
@@ -246,24 +249,24 @@ bool verifica_repositorio()
 }
 
 /*
-    verifica se o individuo da populacao (INDPOP) e' dominado pelo individuo do repositório (INDREP)
+    verifica se o individuo da populacao (ind_A) e' dominado pelo individuo do repositório (ind_B)
 */
-bool dominados(Individuo IndPop, Individuo IndRep)
+bool dominados(Individuo ind_A, Individuo ind_B)
 {
     //variavel contadora de objetivos
     int cont = 0;
     for (int obj = 0; obj < dimensoes_obj; obj++)
     {
-        if (IndPop.fx[obj] <= IndRep.fx[obj])
+        if (ind_A.fx[obj] <= ind_B.fx[obj])
         {
-            //incrementanda toda vez que o obetivo de IndPop for menor ou igual que objetivo de IndRep
+            //incrementanda toda vez que o obetivo de ind_A for menor ou igual que objetivo de ind_B
             cont++;
         }
     }
     if (cont == dimensoes_obj)
     {
-        // se o valor de cont for o mesmo que a quantidade de objetivos, quer dizer que todas as solucoes de IndPop
-        // sao domindadas por IndRep | se for isso, retorna TRUE
+        // se o valor de cont for o mesmo que a quantidade de objetivos, quer dizer que todas as solucoes de ind_A
+        // sao domindadas por ind_B | se for isso, retorna TRUE
         return true;
     }
     else
@@ -411,7 +414,7 @@ void selecionarLider(Particula *part)
     }
     if (contador == 1)
     {
-        part->solucao = repositorio[index];
+        part->melhorGlobal = repositorio[index];
     }
     else
     {
@@ -430,15 +433,16 @@ void selecionarLider(Particula *part)
         {
             if (solucao_1.cd > solucao_2.cd)
             {
-                part->solucao = solucao_1;
+                part->melhorGlobal = solucao_1;
             }
             else
             {
-                part->solucao = solucao_2;
+                part->melhorGlobal = solucao_2;
             }
         }
     }
 }
+
 
 void calcularVelocidade(Particula *part)
 {
@@ -456,6 +460,7 @@ void calcularVelocidade(Particula *part)
     }
 }
 
+
 void atualizarPosicao(Particula *part)
 {
     for (int j = 0; j < dimensoes_var; j++)
@@ -467,6 +472,7 @@ void atualizarPosicao(Particula *part)
             part->solucao.x[j] = limiteInferior;
     }
 }
+
 
 void mutacao(Individuo *ind)
 {
@@ -509,9 +515,15 @@ void mutacao(Individuo *ind)
     }
 }
 
+/*
+    se o melhor pessoal nao dominar a nova solução, troca
+*/
 void atualizarMelhorPessoal(Particula *part)
 {
-    //se o melhor pessoal nao dominar a nova solução, troca
+    if (dominados(part->solucao, part->melhorPessoal) == true)
+    {
+        part->melhorPessoal=part->solucao;
+    }
 }
 
 void calcularDTLZ2(double *x, double *fx)
@@ -536,6 +548,7 @@ void calcularDTLZ2(double *x, double *fx)
         }
     }
 }
+
 
 void calcularDTLZ3(double *x, double *fx)
 {
